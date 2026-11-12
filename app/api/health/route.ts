@@ -1,0 +1,1 @@
+import {NextResponse} from 'next/server';export async function GET(){return NextResponse.json({ok:true,aiConfigured:!!process.env.GEMINI_API_KEY,paypalConfigured:!!(process.env.PAYPAL_CLIENT_ID&&process.env.PAYPAL_CLIENT_SECRET),demoKeyEnabled:!!process.env.DEMO_ACCESS_KEY});}

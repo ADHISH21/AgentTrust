@@ -1,0 +1,2 @@
+import {NextRequest,NextResponse} from 'next/server';import {compileIntent} from '@/lib/ai';import {gate,failure} from '@/lib/auth';
+export async function POST(req:NextRequest){const denied=gate(req);if(denied)return denied;try{const {instruction}=await req.json();if(typeof instruction!=='string')throw new Error('Instruction required');return NextResponse.json({policy:await compileIntent(instruction)});}catch(e){return failure(e);}}

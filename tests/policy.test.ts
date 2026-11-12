@@ -1,0 +1,11 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {evaluate} from '../lib/policy';import type {Policy,Proposal} from '../lib/schema';
+const policy:Policy={purpose:'Office supplies',maxAmount:200,currency:'USD',allowedCategories:['office_supplies'],allowedMerchants:['Acme Office'],expiresAt:'2099-01-01T00:00:00.000Z',confidence:.98};
+const purchase:Proposal={item:'Desk organizer',category:'office_supplies',merchant:'Acme Office',amount:75,currency:'USD',evidence:'Catalog SKU AC-22 verified by merchant'};
+test('legitimate purchase is allowed',()=>assert.equal(evaluate(policy,purchase).decision,'ALLOW'));
+test('semantic category violation blocked within budget',()=>assert.equal(evaluate(policy,{...purchase,item:'Gaming headset',category:'gaming_accessories',amount:90}).decision,'BLOCK'));
+test('over budget blocked',()=>assert.equal(evaluate(policy,{...purchase,amount:260}).decision,'BLOCK'));
+test('merchant mismatch blocked',()=>assert.equal(evaluate(policy,{...purchase,merchant:'Unknown Shop'}).decision,'BLOCK'));
+test('missing evidence escalates',()=>assert.equal(evaluate(policy,{...purchase,evidence:''}).decision,'REVIEW'));
+test('low confidence escalates',()=>assert.equal(evaluate({...policy,confidence:.7},purchase).decision,'REVIEW'));
+test('expired authorization blocked',()=>assert.equal(evaluate({...policy,expiresAt:'2020-01-01T00:00:00.000Z'},purchase).decision,'BLOCK'));
+test('category aliases do not permit unrelated products',()=>assert.equal(evaluate(policy,{...purchase,category:'office_supplies_and_gaming'}).decision,'BLOCK'));
